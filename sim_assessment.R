@@ -26,12 +26,11 @@ library(tidyverse)
 library(tictoc)
 source("gen_sample.R")
 source("cv_procedures.R")
-tic()
 
 ####################################
 # Define parameters for simulation #
 ####################################
-SEED <- 2018
+SEED <- 17776
 set.seed(SEED)
 MAX_X <- 100   # Boundaries of data to use
 MAX_Y <- 100
@@ -43,8 +42,11 @@ NROW <- 4   # Number of rows for grid CV
 NCOL <- 4   # Number of columns for grid CV
 BUFFER <- 10   # Buffer for SLOO CV
 
-SP_VARS <- TRUE   # Whether vars are spat. correlated
-SP_NOISE <- TRUE   # Whether noise is spat. correlated
+for (tuple in list(c(F,F), c(F,T), c(T,F), c(T,T))) {
+tic()
+  
+SP_VARS <- tuple[1]   # Whether vars are spat. correlated
+SP_NOISE <- tuple[2]   # Whether noise is spat. correlated
 
 # Define true model
 f <- function(a,b,c,d,e,f){
@@ -116,7 +118,7 @@ file_name <- paste("Results/assessment/sim-",
 write_csv(output, file_name)
 toc()
 
-
+}
 
 #######
 # EDA #
