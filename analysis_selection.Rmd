@@ -24,22 +24,53 @@ cl <- c("solid", "longdash", "dashed", "dotted")
 ## Setup
 
 ```{r, include=FALSE}
-df_select <- read_csv("Documents/Thesis/Simulations/Results/final_results/selection-100x100-5000_cv4x4-k10_flipped.csv")
+sims_FF <- read_csv("Results/selection/sim-spvars-FALSE_spnoise-FALSE_100x100-500_cv4x4-k10-buffer10_seed1.csv")
+sims_FT <- read_csv("Results/selection/sim-spvars-FALSE_spnoise-TRUE_100x100-500_cv4x4-k10-buffer10_seed1.csv")
+sims_TF <- read_csv("Results/selection/sim-spvars-TRUE_spnoise-FALSE_100x100-500_cv4x4-k10-buffer10_seed1.csv")
+sims_TT <- read_csv("Results/selection/sim-spvars-TRUE_spnoise-TRUE_100x100-500_cv4x4-k10-buffer10_seed1.csv")
 ```
 
 ## Analysis
 
 ```{r, echo=FALSE}
 # Summary table for means
-order_vec <- c("sel_train", "sel_cv", "sel_cv_flip", "sel_grid_buffer", "sel_grid_buffer_flip")
-df_select %>%
-  gather(`Selection Method`, model_selected, sel_train:sel_grid_buffer_flip) %>%
+order_vec <- c("sel_train", "sel_cv", "sel_cv_flip", "sel_loo", "sel_grid", "sel_grid_flip", "sel_sloo")
+
+sims_FF %>%
+  gather(`Selection Method`, model_selected, sel_train:sel_sloo) %>%
+  group_by(`Selection Method`) %>%
+  summarize(
+    `Underfit` = sum(model_selected<=3),
+    `Correct` = sum(model_selected==4),
+    `Overfit` = sum(model_selected>=5)) %>%
+  slice(match(order_vec, `Selection Method`))
+
+sims_TT %>%
+  gather(`Selection Method`, model_selected, sel_train:sel_sloo) %>%
+  group_by(`Selection Method`) %>%
+  summarize(
+    `Underfit` = sum(model_selected<=3),
+    `Correct` = sum(model_selected==4),
+    `Overfit` = sum(model_selected>=5)) %>%
+  slice(match(order_vec, `Selection Method`))
+```
+
+pretty table below
+
+```{r, echo=FALSE}
+# Summary table for means
+order_vec <- c("sel_train", "sel_cv", "sel_cv_flip", "sel_loo", "sel_grid", "sel_grid_flip", "sel_sloo")
+sims_FF %>%
+  gather(`Selection Method`, model_selected, sel_train:sel_sloo) %>%
   group_by(`Selection Method`) %>%
   summarize(
     `Selected $m_1$` = sum(model_selected==1),
     `Selected $m_2$` = sum(model_selected==2),
     `Selected $m_3$` = sum(model_selected==3),
-    `Selected $m_4$` = sum(model_selected==4)) %>%
+    `Selected $m_4$` = sum(model_selected==4),
+    `Selected $m_5$` = sum(model_selected==5),
+    `Selected $m_6$` = sum(model_selected==6),
+    `Selected $m_7$` = sum(model_selected==7)) %>%
   slice(match(order_vec, `Selection Method`)) %>%   # reorder rows
   kable(format = "latex", booktabs = T) %>%
   kable_styling(latex_options = "striped")

@@ -34,7 +34,7 @@ SEED <- 17776
 set.seed(SEED)
 MAX_X <- 100   # Boundaries of data to use
 MAX_Y <- 100
-NUMSAMP <- 10   # Number of simulation samples to generate
+NUMSAMP <- 100   # Number of simulation samples to generate
 NPOINTS <- 500   # Number of points per sample
 
 NFOLDS <- 10   # Number of folds for K-fold cv
@@ -47,6 +47,8 @@ tic()
   
 SP_VARS <- tuple[1]   # Whether vars are spat. correlated
 SP_NOISE <- tuple[2]   # Whether noise is spat. correlated
+# SP_VARS <- TRUE   # Whether vars are spat. correlated
+# SP_NOISE <- TRUE   # Whether noise is spat. correlated
 
 # Define true model
 f <- function(a,b,c,d,e,f){
