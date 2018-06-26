@@ -1,0 +1,149 @@
+---
+title: "Analyzing Simulated Error Estimates"
+author: "Jonathan Che"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(tidyverse)
+require(knitr)
+require(kable)
+require(kableExtra)
+
+# Discrete scales for color and linetype
+cc <- scales::seq_gradient_pal("blue", "orange", "Lab")(seq(0,1,length.out=5))
+cl <- c("solid", "longdash", "dashed", "dotted")
+```
+
+## Setup
+
+```{r, include=FALSE}
+sims <- read_csv("Results/assessment/sim-2018_100x100-500_cv4x4-k10-buffer10_INDEP.csv")
+```
+
+```{r, echo=FALSE}
+# Summary table for means
+sims %>%
+  gather(
+    key=method, value=estimate, 
+    err_true:err_sloo) %>%
+  group_by(method) %>%
+  summarize(avg_est = mean(estimate)) %>%
+  arrange(factor(avg_est))
+```
+
+```{r, include=FALSE}
+# Summary table for means
+sims %>%
+  rename(
+    `Training Error` = err_train,
+    `K-fold CV` = err_cv,
+    `K-fold CV Flipped` = err_cv_flip,
+    `Buffered Grid CV` = err_grid_buffer,
+    `Buffered Grid CV Flipped` = err_grid_buffer_flip) %>%
+  gather(
+    `Assessment Method`, est_val, 
+    `Training Error`:`Buffered Grid CV Flipped`) %>%
+  group_by(`Assessment Method`) %>%
+  summarize(`Average Error Estimate` = mean(est_val)) %>%
+  arrange(factor(`Average Error Estimate`)) %>%
+  kable(
+    format = "latex", 
+    digits = 3,
+    booktabs = T)
+```
+
+```{r, echo=FALSE}
+# Summary table for variances
+sims %>%
+  gather(
+    key=method, value=estimate, 
+    err_true:err_sloo) %>%
+  group_by(method) %>%
+  summarize(est_var = var(estimate)) %>%
+  arrange(factor(est_var))
+```
+
+We see that flipped strategies give higher (less optimistic) error estimates! They are also more variable, however.
+
+```{r}
+# summary table for differences of means
+sims %>%
+  rename(
+    `Training Error` = err_train,
+    `K-fold CV` = err_cv,
+    `K-fold CV Flipped` = err_cv_flip,
+    `Buffered Grid CV` = err_grid_buffer,
+    `Buffered Grid CV Flipped` = err_grid_buffer_flip) %>%
+  gather(
+    `Assessment Method`, est_val, 
+    `Training Error`:`Buffered Grid CV Flipped`) %>%
+  mutate(diff = abs(est_val-err_true)) %>%
+  group_by(`Assessment Method`) %>%
+  summarize(`Average Difference` = mean(diff)) %>%
+  kable(
+    format = "latex", 
+    digits = 3,
+    booktabs = T)
+```
+
+
+```{r}
+# Density plot
+sims %>%
+  gather(
+    key=method, value=estimate, 
+    err_train:err_sloo) %>%
+  mutate(method = factor(method, levels=c("err_train", "err_cv", "err_cv_flip", "err_loo", "err_grid_buffer", "err_grid_buffer_flip", "err_sloo"))) %>%
+  ggplot((aes(x=estimate-err_true))) +
+  geom_density(aes(color=method, linetype=method)) +
+  scale_linetype_manual(
+    name="Error Estimation Method",
+    values=c("solid", "solid", "dashed", "dotted", "solid", "dashed", "dotted")) +
+  scale_color_manual(
+    name="Error Estimation Method",
+    values=c("blue", "black", "black", "black", "red", "red", "red")) +
+  geom_vline(xintercept=0) +
+  coord_cartesian(xlim=c(-0.1, 0.1)) +
+  labs(
+    y="Density",
+    x="Error Estimate - True Error",
+    color="Error Estimation Method"
+  )
+```
+
+```{r, include=FALSE}
+# Density plot
+sims %>%
+  rename(
+    `K-fold CV` = err_cv,
+    `MPCV` = err_cv_flip,
+    `Buffered Grid CV` = err_grid_buffer,
+    `FBGCV` = err_grid_buffer_flip) %>%
+  gather(
+    err_est, est_val, 
+    `K-fold CV`:`FBGCV`) %>%
+  mutate(err_est = factor(err_est, levels=c("K-fold CV", "MPCV", "Buffered Grid CV", "FBGCV"))) %>%
+  ggplot((aes(x=est_val-err_true))) +
+  geom_density(aes(color=err_est, linetype=err_est)) +
+  scale_linetype_manual(
+    name="Error Estimation Method",
+    values=c("solid", "dashed", "solid", "dashed")) +
+  scale_color_manual(
+    name="Error Estimation Method",
+    values=c("black", "black", "red", "red")) +
+  geom_vline(xintercept=0) +
+  coord_cartesian(xlim=c(-0.5, 0.5)) +
+  labs(
+    y="Density",
+    x="Error Estimate - True Error",
+    color="Error Estimation Method"
+  )
+```
+
+We note that flipped buffered grid CV both underpredicts and overpredicts model error with similar probabilities, which leads to greater average absolute error but an error distribution centered almost at the true error.
+
+## Conclusion
+
+Spatial CV methods are slightly more accurate at estimating model error!

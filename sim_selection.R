@@ -8,45 +8,49 @@
 # METHODS:
 # Data: simulated data
 #  - 500 observations on 100x100 grid
-#  - Spatially correlated variables X1, X2, and X3
+#  - Spatially correlated variables X1...X10
 #  - Spatially correlated noise
-# True model: function of X1, X2
+# True model: function of X1...X10
 # Fit model: linear regression
 # Blocking strategies:
 #  1) Training error
 #  2) K-fold CV
-#  3) LOO Bootstrap
-#  4) Buffered Grid CV
-#  5) Spatial LOO CV
-#  6) Moving Circle Bootstrap
+#  3) Flipped K-fold CV
+#  4) LOO CV
+#  5) Buffered Grid CV
+#  6) Flipped Buffered Grid CV
+#  7) Spatial LOO CV
 # Error metric: RMSE
 
 # Setup
 library(tidyverse)
 library(tictoc)
-source("Documents/Thesis/Simulations/sim_final_generate_sample.R")
-source("Documents/Thesis/Simulations/cv_procedures.R")
-source("Documents/Thesis/Simulations/bootstrap_procedures.R")
+source("gen_sample.R")
+source("cv_procedures.R")
 tic()
 
 ####################################
 # Define parameters for simulation #
 ####################################
-set.seed(700)
+SEED <- 2018
+set.seed(SEED)
 MAX_X <- 100   # Boundaries of data to use
 MAX_Y <- 100
 NUMSAMP <- 100   # Number of simulation samples to generate
-NPOINTS <- 5000   # Number of points per sample
+NPOINTS <- 500   # Number of points per sample
 
 NFOLDS <- 10   # Number of folds for K-fold cv
 NROW <- 4   # Number of rows for grid CV
 NCOL <- 4   # Number of columns for grid CV
+BUFFER <- 10   # Buffer for SLOO CV
 
 # Define true model
-f <- function(x, y, z){
-  b1 <- 2
-  b2 <- 2
-  return(b1*sin(pi*x) + b2*(y))
+f <- function(a,b,c,d,e,f,g,h,i,j){
+  # b1 <- 2
+  # b2 <- 2
+  # b3 <- 4
+  # return(b1*sin(pi*x) + b2*(y) + b3*(z>0))
+  return(a+b+c+d+e)
 }
 
 # Generate random samples

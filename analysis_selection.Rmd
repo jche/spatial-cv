@@ -1,0 +1,52 @@
+---
+title: "Analyzing Simulated Model Selection"
+author: "Jonathan Che"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+if(system("whoami", intern=TRUE) %in% c("rudeboybert", "aykim")){
+  knitr::opts_knit$set(root.dir = "~/Documents/Projects/TreeCompetition/")
+} else {
+  knitr::opts_knit$set(root.dir = "~/TreeCompetition")
+}
+require(tidyverse)
+require(knitr)
+require(kableExtra)
+
+# Discrete scales for color and linetype
+cc <- scales::seq_gradient_pal("blue", "orange", "Lab")(seq(0,1,length.out=5))
+cl <- c("solid", "longdash", "dashed", "dotted")
+```
+
+## Setup
+
+```{r, include=FALSE}
+df_select <- read_csv("Documents/Thesis/Simulations/Results/final_results/selection-100x100-5000_cv4x4-k10_flipped.csv")
+```
+
+## Analysis
+
+```{r, echo=FALSE}
+# Summary table for means
+order_vec <- c("sel_train", "sel_cv", "sel_cv_flip", "sel_grid_buffer", "sel_grid_buffer_flip")
+df_select %>%
+  gather(`Selection Method`, model_selected, sel_train:sel_grid_buffer_flip) %>%
+  group_by(`Selection Method`) %>%
+  summarize(
+    `Selected $m_1$` = sum(model_selected==1),
+    `Selected $m_2$` = sum(model_selected==2),
+    `Selected $m_3$` = sum(model_selected==3),
+    `Selected $m_4$` = sum(model_selected==4)) %>%
+  slice(match(order_vec, `Selection Method`)) %>%   # reorder rows
+  kable(format = "latex", booktabs = T) %>%
+  kable_styling(latex_options = "striped")
+```
+
+We see that buffered grid CV is the best at picking the correct model (model 3). While flipped K-fold CV outperforms regular K-fold CV, flipped buffered grid CV does not outperform buffered grid CV.
+
+## Conclusion
+
+Spatial CV methods are better at model selection!

@@ -21,7 +21,7 @@ require(sperrorest)
 ########################
 
 # K-fold CV for tree (using rpart)
-cv_tree <- function(df, nfolds, cp, model_formula=as.formula("growth ~ X1")) {
+cv_tree <- function(df, nfolds, cp, model_formula=as.formula("val ~ X1")) {
   cv_errors <- vector(mode="numeric", length=nfolds)
 
   # Shuffle data and partition folds
@@ -40,14 +40,14 @@ cv_tree <- function(df, nfolds, cp, model_formula=as.formula("growth ~ X1")) {
                           data = train, 
                           control=tree_parameters)
     # Store error
-    diffs <- predict(fitted_model, test) - test$growth
+    diffs <- predict(fitted_model, test) - test$val
     cv_errors[i] <- mean(diffs^2)
   }
   return(sqrt(mean(cv_errors)))
 }
 
 # K-fold CV for lm
-cv_lm <- function(df, nfolds, cp, model_formula) {
+cv_lm <- function(df, nfolds, model_formula) {
   cv_errors <- vector(mode="numeric", length=nfolds)
   
   # Shuffle data and partition folds
@@ -63,7 +63,7 @@ cv_lm <- function(df, nfolds, cp, model_formula) {
     # Fit lm
     fitted_model <- lm(model_formula, data = train)
     # Store error
-    diffs <- predict(fitted_model, test) - test$growth
+    diffs <- predict(fitted_model, test) - test$val
     cv_errors[i] <- mean(diffs^2)
   }
   return(sqrt(mean(cv_errors)))
@@ -85,17 +85,17 @@ cv_spline <- function(df, nfolds, deg_free) {
     train <- temp[-test_index, ]
     # Fit spline
     model_spline <- smooth.spline(x=train$X1,
-                                  y=train$growth, 
+                                  y=train$val, 
                                   df=deg_free)
     # Store error
-    diffs <- predict(model_spline, x=test$X1)$y - test$growth
+    diffs <- predict(model_spline, x=test$X1)$y - test$val
     cv_errors[i] <- mean(diffs^2)
   }
   return(sqrt(mean(cv_errors)))
 }
 
 # Flipped K-fold CV for lm
-cv_lm_flip <- function(df, nfolds, cp, model_formula) {
+cv_lm_flip <- function(df, nfolds, model_formula) {
   # Empty dataframe with 1 column per observation in df
   obs_errors <- matrix(nrow=0, ncol=nrow(df))
   
@@ -113,7 +113,7 @@ cv_lm_flip <- function(df, nfolds, cp, model_formula) {
     fitted_model <- lm(model_formula, data = train)
     # Store error for each observation (0 for obs in train)
     err_vec <- vector(mode="numeric", length=nrow(df))
-    diffs <- predict(fitted_model, test) - test$growth
+    diffs <- predict(fitted_model, test) - test$val
     err_vec[-train_index] <- diffs
     obs_errors <- rbind(obs_errors, err_vec)
   }
@@ -175,7 +175,7 @@ cv_grid_buffer_lm <- function(df, nrow, ncol, model_formula) {
     model_lm <- lm(model_formula, data=train)
     model_preds <- predict(model_lm, test)
     # Store results
-    results_list[[j]] <- rmse(model_preds, test$growth)
+    results_list[[j]] <- rmse(model_preds, test$val)
   }
   return(sum(unlist(results_list)) / (nfolds_spat-num_empty_folds))
 }
@@ -225,7 +225,7 @@ cv_grid_buffer_lm_flip <- function(df, nrow, ncol, model_formula) {
     model_lm <- lm(model_formula, data=train)
     # Store error for each observation (0 for obs in train)
     err_vec <- vector(mode="numeric", length=nrow(df))
-    diffs <- predict(model_lm, test) - test$growth
+    diffs <- predict(model_lm, test) - test$val
     err_vec[test_index] <- diffs
     obs_errors <- rbind(obs_errors, err_vec)
   }
