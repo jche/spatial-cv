@@ -43,6 +43,9 @@ NROW <- 4   # Number of rows for grid CV
 NCOL <- 4   # Number of columns for grid CV
 BUFFER <- 10   # Buffer for SLOO CV
 
+SP_VARS <- TRUE   # Whether vars are spat. correlated
+SP_NOISE <- TRUE   # Whether noise is spat. correlated
+
 # Define true model
 f <- function(a,b,c,d,e,f){
   return(a+b+c+d+e+f)
@@ -51,7 +54,8 @@ model_formula <- as.formula("val ~ X1 + X2 + X3 + X4 + X5 + X6")
 
 # Generate random samples
 all_samps <- vector(mode = "list", length = NUMSAMP)
-all_samps <- lapply(all_samps, function(x) {generate_sample(f, npoints=NPOINTS, independent=TRUE)})
+all_samps <- lapply(all_samps, function(x) {
+  generate_sample(f, spat_vars=SP_VARS, spat_noise=SP_NOISE, npoints=NPOINTS)})
 
 # Compute true error and error estimates (1-5) for each sample
 err_df <- data.frame()
@@ -101,12 +105,13 @@ colnames(err_df) <- c("set_number", "err_true", "err_train", "err_cv",
 # Write output
 output <- err_df
 file_name <- paste("Results/assessment/sim-",
-                   SEED, "_",
-                   MAX_X, "x", MAX_Y, "-", NPOINTS,
-                   "_cv", NCOL, "x", NROW, 
+                   "spvars-", SP_VARS,
+                   "_spnoise-", SP_NOISE,
+                   "_", MAX_X, "x", MAX_Y, "-", NPOINTS,
+                   "_cv", NCOL, "x", NROW,
                    "-k", NFOLDS,
                    "-buffer", BUFFER,
-                   "_INDEP",
+                   "_seed", SEED,
                    ".csv", sep="")
 write_csv(output, file_name)
 toc()
@@ -118,7 +123,7 @@ toc()
 #######
 
 # Plot learning curve for linear model
-if (TRUE) {
+if (FALSE) {
   err_df <- data.frame(matrix(ncol = 2, nrow = 0))
   temp_train <- all_samps[[1]]
   temp_test <- all_samps[[6]]
@@ -155,7 +160,7 @@ if (TRUE) {
 }
 
 # Plot residuals in space for linear model
-if (TRUE) {
+if (FALSE) {
   require(broom)
   
   temp_train <- all_samps[[1]]

@@ -3,6 +3,7 @@
 #
 # INPUT: 
 #  - true function f:(X1...X6) -> val
+#  - whether variables & noise are independent or spatially correlated
 #  - (maximum x-coordinate)
 #  - (maximum y-coordinate)
 #  - (number of points)
@@ -18,7 +19,7 @@
 
 require(mvnfast)
 
-generate_sample <- function(f, max_x=100, max_y=100, npoints=500, sigma=0.5, independent=FALSE) {
+generate_sample <- function(f, spat_vars, spat_noise, max_x=100, max_y=100, npoints=500, sigma=0.5) {
   # Generate x/y coordinates, uniformly across space
   #  - TODO: generate x/y coordinates with spatial clustering
   #          - can use mixture of normals in space to do so
@@ -26,27 +27,44 @@ generate_sample <- function(f, max_x=100, max_y=100, npoints=500, sigma=0.5, ind
   y <- runif(npoints, 0, max_y)
   df <- data.frame(x,y)
   
-  if(!independent){
-    # Generate spatially correlated X variables, noise
+  if(spat_vars){
+    # Spatially dependent covariance matrix
     mat <- as.matrix(proxy::dist(df))   # distance matrix
     sigma_mat <- 1 - mat/(mat+1)   # decaying function to simulate distance decay
     sigma_mat <- (sigma^2)*sigma_mat   # diagonals equal variance
   } else{
-    # Generate independent X variables
+    # Independent covariance matrix
     sigma_mat <- diag(npoints)
   }
-  # Generate nonspatial normal noise
-  noise <- rnorm(npoints, 0, sigma)
   
   vars <- rmvn(
-    n=7,   # number of variables to generate (including noise)
+    n=6,   # number of variables to generate (without noise)
     mu=rep(0, npoints),   # vector of variable means
     sigma=sigma_mat, 
     ncores=4)
-  df <- cbind(df, t(vars))
+  
+  if(spat_noise){
+    if(!spat_vars){
+      # Generate sp. dep. cov. matrix if haven't done so yet
+      mat <- as.matrix(proxy::dist(df))   # distance matrix
+      sigma_mat <- 1 - mat/(mat+1)   # decaying function to simulate distance decay
+      sigma_mat <- (sigma^2)*sigma_mat   # diagonals equal variance
+    }
+    # Spatially dependent noise 
+    noise <- as.vector(rmvn(
+      n=1,
+      mu=rep(0, npoints),
+      sigma=sigma_mat, 
+      ncores=4))
+  } else{
+    # Spatially independent noise
+    noise <- rnorm(npoints, 0, sigma)
+  }
+  
+  df <- cbind(df, t(vars), noise)
   colnames(df) <- c("x","y","X1","X2","X3","X4","X5","X6","eps")
   df <- df %>%
-    mutate(val = f(X1,X2,X3,X4,X5,X6) + eps + noise)
+    mutate(val = f(X1,X2,X3,X4,X5,X6) + eps)
   return(df)
 }
 
@@ -61,9 +79,19 @@ if (FALSE) {
   f <- function(a,b,c,d,e,f){
     return(a+b+c)
   }
-  foo <- generate_sample(f, sigma=0.8, npoints=1000)
+  foo <- generate_sample(f, spat_vars=FALSE, spat_noise=FALSE, sigma=0.8, npoints=1000)
   
   # Plot spatial structure of variables
+  foo %>%
+    ggplot(aes(x=x,y=y)) +
+    geom_point(aes(color=X1), size=2) +
+    scale_color_continuous(low="blue", high="orange")
+  # Plot spatial structure of noise
+  foo %>%
+    ggplot(aes(x=x,y=y)) +
+    geom_point(aes(color=eps), size=2) +
+    scale_color_continuous(low="blue", high="orange")
+  # Plot spatial structure of response
   foo %>%
     ggplot(aes(x=x,y=y)) +
     geom_point(aes(color=val), size=2) +
@@ -71,7 +99,7 @@ if (FALSE) {
   
   # See how Xi relate to f
   foo %>%
-    ggplot(aes(x=X5,y=val)) +
+    ggplot(aes(x=X1,y=val)) +
     geom_point()
 }
 

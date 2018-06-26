@@ -19,12 +19,39 @@ cl <- c("solid", "longdash", "dashed", "dotted")
 ## Setup
 
 ```{r, include=FALSE}
-sims <- read_csv("Results/assessment/sim-2018_100x100-500_cv4x4-k10-buffer10_INDEP.csv")
+sims_FF <- read_csv("Results/assessment/sim-spvars-FALSE_spnoise-FALSE_100x100-500_cv4x4-k10-buffer10_seed2018.csv")
+sims_FT <- read_csv("Results/assessment/sim-spvars-FALSE_spnoise-TRUE_100x100-500_cv4x4-k10-buffer10_seed2018.csv")
+sims_TF <- read_csv("Results/assessment/sim-spvars-TRUE_spnoise-FALSE_100x100-500_cv4x4-k10-buffer10_seed2018.csv")
+sims_TT <- read_csv("Results/assessment/sim-spvars-TRUE_spnoise-TRUE_100x100-500_cv4x4-k10-buffer10_seed2018.csv")
 ```
 
 ```{r, echo=FALSE}
-# Summary table for means
-sims %>%
+# Summary tables for means
+sims_FF %>%
+  gather(
+    key=method, value=estimate, 
+    err_true:err_sloo) %>%
+  group_by(method) %>%
+  summarize(avg_est = mean(estimate)) %>%
+  arrange(factor(avg_est))
+
+sims_FT %>%
+  gather(
+    key=method, value=estimate, 
+    err_true:err_sloo) %>%
+  group_by(method) %>%
+  summarize(avg_est = mean(estimate)) %>%
+  arrange(factor(avg_est))
+
+sims_TF %>%
+  gather(
+    key=method, value=estimate, 
+    err_true:err_sloo) %>%
+  group_by(method) %>%
+  summarize(avg_est = mean(estimate)) %>%
+  arrange(factor(avg_est))
+
+sims_TT %>%
   gather(
     key=method, value=estimate, 
     err_true:err_sloo) %>%
@@ -32,6 +59,8 @@ sims %>%
   summarize(avg_est = mean(estimate)) %>%
   arrange(factor(avg_est))
 ```
+
+Pretty output below
 
 ```{r, include=FALSE}
 # Summary table for means
@@ -56,7 +85,31 @@ sims %>%
 
 ```{r, echo=FALSE}
 # Summary table for variances
-sims %>%
+sims_FF %>%
+  gather(
+    key=method, value=estimate, 
+    err_true:err_sloo) %>%
+  group_by(method) %>%
+  summarize(est_var = var(estimate)) %>%
+  arrange(factor(est_var))
+
+sims_FT %>%
+  gather(
+    key=method, value=estimate, 
+    err_true:err_sloo) %>%
+  group_by(method) %>%
+  summarize(est_var = var(estimate)) %>%
+  arrange(factor(est_var))
+
+sims_TF %>%
+  gather(
+    key=method, value=estimate, 
+    err_true:err_sloo) %>%
+  group_by(method) %>%
+  summarize(est_var = var(estimate)) %>%
+  arrange(factor(est_var))
+
+sims_TT %>%
   gather(
     key=method, value=estimate, 
     err_true:err_sloo) %>%
@@ -65,7 +118,9 @@ sims %>%
   arrange(factor(est_var))
 ```
 
-We see that flipped strategies give higher (less optimistic) error estimates! They are also more variable, however.
+
+
+Pretty table below
 
 ```{r}
 # summary table for differences of means
@@ -89,9 +144,74 @@ sims %>%
 ```
 
 
+
+
 ```{r}
-# Density plot
-sims %>%
+# Density plots
+sims_FF %>%
+  gather(
+    key=method, value=estimate, 
+    err_train:err_sloo) %>%
+  mutate(method = factor(method, levels=c("err_train", "err_cv", "err_cv_flip", "err_loo", "err_grid_buffer", "err_grid_buffer_flip", "err_sloo"))) %>%
+  ggplot((aes(x=estimate-err_true))) +
+  geom_density(aes(color=method, linetype=method)) +
+  scale_linetype_manual(
+    name="Error Estimation Method",
+    values=c("solid", "solid", "dashed", "dotted", "solid", "dashed", "dotted")) +
+  scale_color_manual(
+    name="Error Estimation Method",
+    values=c("blue", "black", "black", "black", "red", "red", "red")) +
+  geom_vline(xintercept=0) +
+  coord_cartesian(xlim=c(-0.1, 0.1)) +
+  labs(
+    y="Density",
+    x="Error Estimate - True Error",
+    color="Error Estimation Method"
+  )
+
+sims_FT %>%
+  gather(
+    key=method, value=estimate, 
+    err_train:err_sloo) %>%
+  mutate(method = factor(method, levels=c("err_train", "err_cv", "err_cv_flip", "err_loo", "err_grid_buffer", "err_grid_buffer_flip", "err_sloo"))) %>%
+  ggplot((aes(x=estimate-err_true))) +
+  geom_density(aes(color=method, linetype=method)) +
+  scale_linetype_manual(
+    name="Error Estimation Method",
+    values=c("solid", "solid", "dashed", "dotted", "solid", "dashed", "dotted")) +
+  scale_color_manual(
+    name="Error Estimation Method",
+    values=c("blue", "black", "black", "black", "red", "red", "red")) +
+  geom_vline(xintercept=0) +
+  coord_cartesian(xlim=c(-0.1, 0.1)) +
+  labs(
+    y="Density",
+    x="Error Estimate - True Error",
+    color="Error Estimation Method"
+  )
+
+sims_TF %>%
+  gather(
+    key=method, value=estimate, 
+    err_train:err_sloo) %>%
+  mutate(method = factor(method, levels=c("err_train", "err_cv", "err_cv_flip", "err_loo", "err_grid_buffer", "err_grid_buffer_flip", "err_sloo"))) %>%
+  ggplot((aes(x=estimate-err_true))) +
+  geom_density(aes(color=method, linetype=method)) +
+  scale_linetype_manual(
+    name="Error Estimation Method",
+    values=c("solid", "solid", "dashed", "dotted", "solid", "dashed", "dotted")) +
+  scale_color_manual(
+    name="Error Estimation Method",
+    values=c("blue", "black", "black", "black", "red", "red", "red")) +
+  geom_vline(xintercept=0) +
+  coord_cartesian(xlim=c(-0.1, 0.1)) +
+  labs(
+    y="Density",
+    x="Error Estimate - True Error",
+    color="Error Estimation Method"
+  )
+
+sims_TT %>%
   gather(
     key=method, value=estimate, 
     err_train:err_sloo) %>%
@@ -112,6 +232,8 @@ sims %>%
     color="Error Estimation Method"
   )
 ```
+
+Pretty graph below
 
 ```{r, include=FALSE}
 # Density plot
