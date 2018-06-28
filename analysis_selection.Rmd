@@ -24,10 +24,10 @@ cl <- c("solid", "longdash", "dashed", "dotted")
 ## Setup
 
 ```{r, include=FALSE}
-sims_FF <- read_csv("Results/selection/sim-spvars-FALSE_spnoise-FALSE_100x100-500_cv4x4-k10-buffer10_seed1.csv")
-sims_FT <- read_csv("Results/selection/sim-spvars-FALSE_spnoise-TRUE_100x100-500_cv4x4-k10-buffer10_seed1.csv")
-sims_TF <- read_csv("Results/selection/sim-spvars-TRUE_spnoise-FALSE_100x100-500_cv4x4-k10-buffer10_seed1.csv")
-sims_TT <- read_csv("Results/selection/sim-spvars-TRUE_spnoise-TRUE_100x100-500_cv4x4-k10-buffer10_seed1.csv")
+sims_FF <- read_csv("Results/selection/sim-spvars-FALSE_spnoise-FALSE_100x100-500_cv4x4-k10-buffer10_seed630.csv")
+sims_FT <- read_csv("Results/selection/sim-spvars-FALSE_spnoise-TRUE_100x100-500_cv4x4-k10-buffer10_seed630.csv")
+sims_TF <- read_csv("Results/selection/sim-spvars-TRUE_spnoise-FALSE_100x100-500_cv4x4-k10-buffer10_seed630.csv")
+sims_TT <- read_csv("Results/selection/sim-spvars-TRUE_spnoise-TRUE_100x100-500_cv4x4-k10-buffer10_seed630.csv")
 ```
 
 ## Analysis
@@ -37,6 +37,24 @@ sims_TT <- read_csv("Results/selection/sim-spvars-TRUE_spnoise-TRUE_100x100-500_
 order_vec <- c("sel_train", "sel_cv", "sel_cv_flip", "sel_loo", "sel_grid", "sel_grid_flip", "sel_sloo")
 
 sims_FF %>%
+  gather(`Selection Method`, model_selected, sel_train:sel_sloo) %>%
+  group_by(`Selection Method`) %>%
+  summarize(
+    `Underfit` = sum(model_selected<=3),
+    `Correct` = sum(model_selected==4),
+    `Overfit` = sum(model_selected>=5)) %>%
+  slice(match(order_vec, `Selection Method`))
+
+sims_TF %>%
+  gather(`Selection Method`, model_selected, sel_train:sel_sloo) %>%
+  group_by(`Selection Method`) %>%
+  summarize(
+    `Underfit` = sum(model_selected<=3),
+    `Correct` = sum(model_selected==4),
+    `Overfit` = sum(model_selected>=5)) %>%
+  slice(match(order_vec, `Selection Method`))
+
+sims_FT %>%
   gather(`Selection Method`, model_selected, sel_train:sel_sloo) %>%
   group_by(`Selection Method`) %>%
   summarize(

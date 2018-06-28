@@ -127,10 +127,21 @@ toc()
 #######
 
 # Plot learning curve for linear model
-if (FALSE) {
+if (TRUE) {
+  # Define custom f
+  f <- function(a,b,c,d,e,f){
+    #return(3*sin(pi*a)+3*sin(pi*b)+3*sin(pi*c)+3*sin(pi*d)+3*sin(pi*e)+3*sin(pi*f))
+    #return(2*sin(pi*a)+2*b+4*(c>0)+2*sin(pi*d)+2*e+4*(f>0))
+    return(
+      4*(a>-1)+4*(a>0)+4*(a>1) +
+      4*(b>-1)+4*(b>0)+4*(b>1) +
+      4*(c>-1)+4*(c>0)+4*(c>1)
+    )
+  }
+  temp_train <- generate_sample(f, spat_vars=SP_VARS, spat_noise=SP_NOISE, npoints=NPOINTS)
+  temp_test <- generate_sample(f, spat_vars=SP_VARS, spat_noise=SP_NOISE, npoints=NPOINTS)
+  
   err_df <- data.frame(matrix(ncol = 2, nrow = 0))
-  temp_train <- all_samps[[1]]
-  temp_test <- all_samps[[6]]
   
   nrow <- nrow(temp_train)
   npoints <- 20   # number of learning curve points

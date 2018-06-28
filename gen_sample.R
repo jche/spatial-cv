@@ -77,7 +77,8 @@ if (FALSE) {
   require(tidyverse)
   
   f <- function(a,b,c,d,e,f){
-    return(a+b+c)
+    #return(3*sin(pi*a)+3*sin(pi*b)+3*sin(pi*c)+3*sin(pi*d)+3*sin(pi*e)+3*sin(pi*f))
+    return(2*sin(pi*a)+2*b+4*(c>0))
   }
   foo <- generate_sample(f, spat_vars=FALSE, spat_noise=FALSE, sigma=0.8, npoints=1000)
   
