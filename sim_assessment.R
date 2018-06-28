@@ -30,14 +30,14 @@ source("cv_procedures.R")
 ####################################
 # Define parameters for simulation #
 ####################################
-SEED <- 123
+SEED <- 500
 set.seed(SEED)
 MAX_X <- 100   # Boundaries of data to use
 MAX_Y <- 100
 NUMSAMP <- 100   # Number of simulation samples to generate
 NPOINTS <- 500   # Number of points per sample
 
-NFOLDS <- 16   # Number of folds for K-fold cv
+NFOLDS <- 10   # Number of folds for K-fold cv
 NROW <- 4   # Number of rows for grid CV
 NCOL <- 4   # Number of columns for grid CV
 BUFFER <- 15   # Buffer for SLOO CV
@@ -117,6 +117,7 @@ file_name <- paste("Results/assessment/sim-",
                    "-k", NFOLDS,
                    "-buffer", BUFFER,
                    "_seed", SEED,
+                   "_noisier",
                    ".csv", sep="")
 write_csv(output, file_name)
 toc()

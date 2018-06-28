@@ -61,6 +61,10 @@ generate_sample <- function(f, spat_vars, spat_noise, max_x=100, max_y=100, npoi
     noise <- rnorm(npoints, 0, sigma)
   }
   
+  # Add another layer of nonspatial noise
+  extra_noise <- rnorm(npoints, 0, sigma)
+  noise <- noise+extra_noise
+  
   df <- cbind(df, t(vars), noise)
   colnames(df) <- c("x","y","X1","X2","X3","eps")
   df <- df %>%
