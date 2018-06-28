@@ -1,0 +1,95 @@
+---
+title: "Analyzing B-V Tradeoff"
+author: "Jonathan Che"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(tidyverse)
+require(knitr)
+require(kable)
+require(kableExtra)
+```
+
+## Setup
+
+```{r, include=FALSE}
+sims <- read_csv("Results/bvtest/sim-spvars-FALSE_spnoise-FALSE_100x100-500-k2thru500_seed2_complexsignal.csv")
+```
+
+```{r, echo=FALSE}
+# Summary table for means
+sims %>%
+  gather(
+    key=method, value=estimate, 
+    err_true:err_loo) %>%
+  group_by(method) %>%
+  summarize(avg_est = mean(estimate)) %>%
+  arrange(factor(avg_est))
+```
+
+```{r, echo=FALSE}
+# Summary table for bias^2
+sims %>%
+  gather(
+    key=method, value=estimate, 
+    err_cv2:err_loo) %>%
+  group_by(method) %>%
+  summarize(avg_est = mean((estimate-err_true)^2)) %>%
+  arrange(factor(avg_est))
+```
+
+```{r, echo=FALSE}
+# Summary table for variances
+sims %>%
+  gather(
+    key=method, value=estimate, 
+    err_cv2:err_loo) %>%
+  group_by(method) %>%
+  summarize(est_var = var(estimate)) %>%
+  arrange(factor(est_var))
+```
+
+```{r}
+# Density plot
+cc <- scales::seq_gradient_pal("blue", "orange", "Lab")(seq(0,1,length.out=6))
+
+sims %>%
+  gather(
+    key=method, value=estimate, 
+    err_train:err_loo) %>%
+  mutate(method = factor(method, levels=c("err_train", "err_cv2", "err_cv5", "err_cv10", "err_cv50", "err_loo"))) %>%
+  ggplot((aes(x=estimate-err_true))) +
+  geom_density(aes(color=method), lwd=2) +
+  scale_color_manual(
+    name="Error Estimation Method",
+    values=cc) +
+  geom_vline(xintercept=0) +
+  coord_cartesian(xlim=c(-0.1, 0.1)) +
+  labs(
+    y="Density",
+    x="Error Estimate - True Error",
+    color="Error Estimation Method"
+  )
+```
+
+```{r}
+# ugly density plot
+
+sims %>%
+  gather(
+    key=method, value=estimate, 
+    err_train:err_loo) %>%
+  ggplot((aes(x=estimate-err_true))) +
+  geom_density(aes(color=method), lwd=1.5) +
+  geom_vline(xintercept=0) +
+  coord_cartesian(xlim=c(-0.25, 0.25)) +
+  labs(
+    y="Density",
+    x="Error Estimate - True Error",
+    color="Error Estimation Method"
+  )
+```
+
+
