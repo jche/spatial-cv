@@ -30,17 +30,17 @@ source("cv_procedures.R")
 ####################################
 # Define parameters for simulation #
 ####################################
-SEED <- 17776
+SEED <- 123
 set.seed(SEED)
 MAX_X <- 100   # Boundaries of data to use
 MAX_Y <- 100
 NUMSAMP <- 100   # Number of simulation samples to generate
 NPOINTS <- 500   # Number of points per sample
 
-NFOLDS <- 10   # Number of folds for K-fold cv
+NFOLDS <- 16   # Number of folds for K-fold cv
 NROW <- 4   # Number of rows for grid CV
 NCOL <- 4   # Number of columns for grid CV
-BUFFER <- 10   # Buffer for SLOO CV
+BUFFER <- 15   # Buffer for SLOO CV
 
 for (tuple in list(c(F,F), c(F,T), c(T,F), c(T,T))) {
 tic()
@@ -51,10 +51,11 @@ SP_NOISE <- tuple[2]   # Whether noise is spat. correlated
 # SP_NOISE <- TRUE   # Whether noise is spat. correlated
 
 # Define true model
-f <- function(a,b,c,d,e,f){
-  return(a+b+c+d+e+f)
+f <- function(a,b,c){
+  # original function
+  return(2*sin(pi*a)+2*b+4*(c>0))
 }
-model_formula <- as.formula("val ~ X1 + X2 + X3 + X4 + X5 + X6")
+model_formula <- as.formula("val ~ X1 + X2 + X3")
 
 # Generate random samples
 all_samps <- vector(mode = "list", length = NUMSAMP)
@@ -127,16 +128,10 @@ toc()
 #######
 
 # Plot learning curve for linear model
-if (TRUE) {
+if (FALSE) {
   # Define custom f
-  f <- function(a,b,c,d,e,f){
-    #return(3*sin(pi*a)+3*sin(pi*b)+3*sin(pi*c)+3*sin(pi*d)+3*sin(pi*e)+3*sin(pi*f))
-    #return(2*sin(pi*a)+2*b+4*(c>0)+2*sin(pi*d)+2*e+4*(f>0))
-    return(
-      4*(a>-1)+4*(a>0)+4*(a>1) +
-      4*(b>-1)+4*(b>0)+4*(b>1) +
-      4*(c>-1)+4*(c>0)+4*(c>1)
-    )
+  f <- function(a,b,c){
+    return(2*sin(pi*a)+2*b+4*(c>0))
   }
   temp_train <- generate_sample(f, spat_vars=SP_VARS, spat_noise=SP_NOISE, npoints=NPOINTS)
   temp_test <- generate_sample(f, spat_vars=SP_VARS, spat_noise=SP_NOISE, npoints=NPOINTS)
@@ -150,7 +145,7 @@ if (TRUE) {
     train <- temp_train[1:(i*inc),]
     
     # Train lm
-    model_formula <- "val ~ X1 + X2 + X3 + X4 + X5 + X6"
+    model_formula <- "val ~ X1 + X2 + X3"
     model_lm <- lm(model_formula, data=train)
     
     # Get training error (on whole training set)

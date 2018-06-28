@@ -38,7 +38,7 @@ generate_sample <- function(f, spat_vars, spat_noise, max_x=100, max_y=100, npoi
   }
   
   vars <- rmvn(
-    n=6,   # number of variables to generate (without noise)
+    n=3,   # number of variables to generate (without noise)
     mu=rep(0, npoints),   # vector of variable means
     sigma=sigma_mat, 
     ncores=4)
@@ -62,9 +62,9 @@ generate_sample <- function(f, spat_vars, spat_noise, max_x=100, max_y=100, npoi
   }
   
   df <- cbind(df, t(vars), noise)
-  colnames(df) <- c("x","y","X1","X2","X3","X4","X5","X6","eps")
+  colnames(df) <- c("x","y","X1","X2","X3","eps")
   df <- df %>%
-    mutate(val = f(X1,X2,X3,X4,X5,X6) + eps)
+    mutate(val = f(X1,X2,X3) + eps)
   return(df)
 }
 
@@ -76,8 +76,7 @@ generate_sample <- function(f, spat_vars, spat_noise, max_x=100, max_y=100, npoi
 if (FALSE) {
   require(tidyverse)
   
-  f <- function(a,b,c,d,e,f){
-    #return(3*sin(pi*a)+3*sin(pi*b)+3*sin(pi*c)+3*sin(pi*d)+3*sin(pi*e)+3*sin(pi*f))
+  f <- function(a,b,c){
     return(2*sin(pi*a)+2*b+4*(c>0))
   }
   foo <- generate_sample(f, spat_vars=FALSE, spat_noise=FALSE, sigma=0.8, npoints=1000)

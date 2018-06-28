@@ -32,17 +32,17 @@ tic()
 ####################################
 # Define parameters for simulation #
 ####################################
-SEED <- 630
+SEED <- 321
 set.seed(SEED)
 MAX_X <- 100   # Boundaries of data to use
 MAX_Y <- 100
 NUMSAMP <- 100   # Number of simulation samples to generate
 NPOINTS <- 500   # Number of points per sample
 
-NFOLDS <- 10   # Number of folds for K-fold cv
+NFOLDS <- 16   # Number of folds for K-fold cv
 NROW <- 4   # Number of rows for grid CV
 NCOL <- 4   # Number of columns for grid CV
-BUFFER <- 10   # Buffer for SLOO CV
+BUFFER <- 15   # Buffer for SLOO CV
 
 for (tuple in list(c(F,F), c(F,T), c(T,F), c(T,T))) {
 tic()
@@ -53,8 +53,9 @@ SP_NOISE <- tuple[2]   # Whether noise is spat. correlated
 # SP_NOISE <- TRUE   # Whether noise is spat. correlated
 
 # Define true model
-f <- function(a,b,c,d,e,f){
-  return(a+b+c)
+f <- function(a,b,c){
+  # original function
+  return(2*sin(pi*a)+2*b)
 }
 
 # Generate random samples
@@ -70,13 +71,10 @@ for (i in 1:NUMSAMP) {
   # Get sample i
   df_train <- all_samps[[i]]
   model_formulas <- list(
+    as.formula("val ~ X1"),
+    as.formula("val ~ X2"),
     as.formula("val ~ X1 + X2"),
-    as.formula("val ~ X1 + X3"),
-    as.formula("val ~ X2 + X3"),
-    as.formula("val ~ X1 + X2 + X3"),
-    as.formula("val ~ X1 + X2 + X3 + X4"),
-    as.formula("val ~ X1 + X2 + X3 + X5"),
-    as.formula("val ~ X1 + X2 + X3 + X6"))
+    as.formula("val ~ X1 + X2 + X3"))
   
   # Compute training error (1) for each model
   get_err_train <- function(formula) {
