@@ -19,10 +19,10 @@ cl <- c("solid", "longdash", "dashed", "dotted")
 ## Setup
 
 ```{r, include=FALSE}
-sims_FF <- read_csv("Results/assessment/sim-spvars-FALSE_spnoise-FALSE_100x100-500_cv4x4-k10-buffer15_seed500_noisier.csv")
+sims_FF <- read_csv("Results/assessment/sim-spvars-FALSE_spnoise-FALSE_100x100-500_cv4x4-k16-buffer15_seed100_plusA_noFlip_decay10.csv")
 sims_FT <- read_csv("Results/assessment/sim-spvars-FALSE_spnoise-TRUE_100x100-500_cv4x4-k16-buffer15_seed123_noisier.csv")
 sims_TF <- read_csv("Results/assessment/sim-spvars-TRUE_spnoise-FALSE_100x100-500_cv4x4-k16-buffer15_seed123_noisier.csv")
-sims_TT <- read_csv("Results/assessment/sim-spvars-TRUE_spnoise-TRUE_100x100-500_cv4x4-k10-buffer15_seed500_noisier.csv")
+sims_TT <- read_csv("Results/assessment/sim-spvars-TRUE_spnoise-TRUE_100x100-500_cv4x4-k16-buffer15_seed100_plusA_noFlip_decay10.csv")
 ```
 
 ```{r, echo=FALSE}
@@ -225,7 +225,7 @@ sims_TT %>%
     name="Error Estimation Method",
     values=c("blue", "black", "black", "black", "red", "red", "red")) +
   geom_vline(xintercept=0) +
-  coord_cartesian(xlim=c(-0.1, 0.1)) +
+  coord_cartesian(xlim=c(-0.3, 0.1)) +
   labs(
     y="Density",
     x="Error Estimate - True Error",
